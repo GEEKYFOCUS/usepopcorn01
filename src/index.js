@@ -25,5 +25,6 @@ root.render(
     <Test></Test>
   </React.StrictMode>
 );
+console.log("hey")
 
 
