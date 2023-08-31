@@ -55,13 +55,28 @@ const average = (arr) =>
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setErrorMessage] = useState("")
   const KEY = "80dd5fff"
+  const query = "interstellar"
 
   useEffect(function () {
     async function fetchMovie() {
-      const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
-      const data = await res.json();
-      setMovies(data);
+      try {
+        setIsLoading(true)
+        const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`)
+        if (!res.ok) throw new Error("Something went wrong while fetching")
+        const data = await res.json();
+        if (data.Response === "False") throw new Error("Movie not found")
+        console.log(data)
+        setMovies(data.Search);
+
+      } catch (err) {
+        console.log(err.message)
+        setErrorMessage(err.message)
+      } finally {
+        setIsLoading(false)
+      }
     }
     fetchMovie();
   }, [])
@@ -77,18 +92,34 @@ export default function App() {
           <WatchedMoviesList watched={watched} /></>} /> */}
 
         <Box movies={movies}>
-          <MovieList movies={movies} />
-        </Box>
+          {isLoading ? <Loader /> : error ? <ErrorMessage message={error} /> : <MovieList movies={movies} />}
+          {/* {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />} */}
+        </Box >
 
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMoviesList watched={watched} />
         </Box>
-      </Main>
+      </Main >
     </>
   );
 }
 
+function Loader() {
+  return (
+    <p className="loader">Loading...</p>
+  )
+}
+function ErrorMessage({ message }) {
+  console.log("error")
+  return (
+    <p className="error">
+      <span>🔥</span> {message}
+    </p>
+  )
+}
 function NavBar({ children }) {
 
   return (
