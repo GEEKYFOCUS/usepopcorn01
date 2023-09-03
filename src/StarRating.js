@@ -17,7 +17,7 @@ StarRating.propTypes = {
     size: PropTypes.number,
     className: PropTypes.string,
     rateMessage: PropTypes.array,
-    defaultRating: 0,
+    defaultRating: PropTypes.number,
     onSetRating: PropTypes.func,
 }
 
@@ -57,7 +57,7 @@ function Star({ onRate, onHoverIn, onHoverOut, full, color, size }) {
     const StarStyle = {
         display: "block",
         height: `${size}px`,
-        // width: `${size}px`,
+        // widthq: `${size}px`,
         aspectRatio: "1",
         cursor: " pointer",
         color,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import StarRating from "./StarRating.js"
 
 const tempMovieData = [
@@ -54,18 +54,13 @@ const average = (arr) =>
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [query, setQuery] = useState(" ");
-
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false)
   const [error, setErrorMessage] = useState("")
   const [selectedId, setSelectedId] = useState(null)
-  // const [watched, setWatched] = useState([]);
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem("watched")
-    return JSON.parse(storedValue)
-  });
 
   const KEY = "80dd5fff"
-  // const tempQuery = "interstellar"
+  const tempQuery = "interstellar"
 
 
   function handleSelectedId(id) {
@@ -76,16 +71,11 @@ export default function App() {
   }
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie])
-    // localStorage.setItem("watched", JSON.stringify([...watched, movie]))
   }
   function handleDeleteWatched(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id))
-
   }
-  useEffect(function () {
-    localStorage.setItem("watched", JSON.stringify(watched))
 
-  }, [watched])
 
   useEffect(function () {
     const controller = new AbortController();
@@ -103,9 +93,8 @@ export default function App() {
 
 
       } catch (error) {
-
+        console.log(error.message)
         if (error.name !== "AbortError") {
-          console.log(error.message)
           setErrorMessage(error.message)
         }
       } finally {
@@ -209,36 +198,12 @@ function Logo() {
 }
 function Search({ query, setQuery }) {
 
-  const inputEl = useRef(null)
-
-  useEffect(function () {
-    function callback(e) {
-      if (document.activeElement === inputEl.current)
-        return;
-
-      if (e.code === "Enter") {
-        console.log(inputEl.current)
-        inputEl.current.focus()
-        setQuery("")
-      }
-    }
-    document.addEventListener("keydown", callback)
-    return () => document.removeEventListener("keydown", callback)
-  }, [setQuery])
-
-  // useEffect(function () {
-  //   const el = document.querySelector('.search')
-  //   console.log(el)
-  //   el.focus()
-  // })
-
   return (
     <input
       className="search"
       type="text"
       placeholder="Search movies..."
       value={query}
-      ref={inputEl}
       onChange={(e) => setQuery(e.target.value)}
     />)
 }
@@ -281,7 +246,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
   const [movie, setMovie] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [userRating, setUserRating] = useState("")
-  const [avgRating, setAvgRating] = useState(0)
   const isWatched = watched.map((watched) => watched.imdbID).includes(selectedId)
   const watchedUserRating = watched.find((watched) => watched.imdbID === selectedId)?.userRating
   const KEY = "80dd5fff"
@@ -308,13 +272,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
       runtime: Number(runtime.split(" ").at(0)),
       userRating
     }
-    // console.log(newWatchedMovie.imdbRating)
+    console.log(newWatchedMovie.imdbRating)
     onAddWatchedMovie(newWatchedMovie)
-    // onCloseMovie()
-    // setAvgRating(Number(imdbRating))
-    // setAvgRating((avgRating) => (avgRating + userRating) / 2)
-    console.log(avgRating)
-
+    onCloseMovie()
   }
   useEffect(function () {
     function callback(e) {
@@ -368,7 +328,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
             </div>
           </header>
 
-
           <section>
             <div className="rating">
               {!isWatched ?
@@ -376,7 +335,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
                   < StarRating maxRating={10} size={24} onSetRating={setUserRating} />
                   {userRating && <button className="btn-add" onClick={handleAdd}> + Add to list </button>}
                 </> :
-                <p> You rated this movie with {watchedUserRating}<span>🌟</span></p>
+                <p> You rated this movie with {watchedUserRating} <span>🌟</span>x</p>
               }
             </div>
             <p>
@@ -467,7 +426,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⏳</span>
-          <span>{avgRuntime.toFixed(2)} min</span>
+          <span>{avgRuntime} min</span>
         </p>
       </div>
     </div>
@@ -485,7 +444,6 @@ function WatchedMoviesList({ watched, onDeleteWatched }) {
 
 function WatchedMovies({ movie, onDeleteWatched }) {
   // console.log(movie.runtime)
-
   return (
     <li >
       <img src={movie.poster} alt={`${movie.title} poster`} />
