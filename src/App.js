@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating.js"
+import { useMovie } from "./useMovie.js";
 
 const tempMovieData = [
   {
@@ -52,11 +53,7 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
   const [query, setQuery] = useState(" ");
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setErrorMessage] = useState("")
   const [selectedId, setSelectedId] = useState(null)
   // const [watched, setWatched] = useState([]);
   const [watched, setWatched] = useState(function () {
@@ -65,6 +62,7 @@ export default function App() {
   });
 
   const KEY = "80dd5fff"
+
   // const tempQuery = "interstellar"
 
 
@@ -87,46 +85,8 @@ export default function App() {
 
   }, [watched])
 
-  useEffect(function () {
-    const controller = new AbortController();
-    async function fetchMovie() {
-      try {
-        setIsLoading(true)
-        setErrorMessage("")
-        const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`, { signal: controller.signal })
-        if (!res.ok) throw new Error("Something went wrong while fetching")
-        const data = await res.json();
-        if (data.Response === "False") throw new Error("Movie not found")
-        // console.log(data)
-        setMovies(data.Search);
-        setErrorMessage("")
+  const { movies, isLoading, error } = useMovie(query, handleCloseMovie)
 
-
-      } catch (error) {
-
-        if (error.name !== "AbortError") {
-          console.log(error.message)
-          setErrorMessage(error.message)
-        }
-      } finally {
-        setIsLoading(false)
-      }
-
-
-    }
-
-    if (query.length < 3) {
-      setMovies([])
-      setErrorMessage("")
-      return;
-    }
-    handleCloseMovie()
-    fetchMovie();
-
-    return function () {
-      controller.abort()
-    }
-  }, [query])
 
 
 
@@ -282,6 +242,13 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
   const [isLoading, setIsLoading] = useState(false)
   const [userRating, setUserRating] = useState("")
   const [avgRating, setAvgRating] = useState(0)
+
+  const countRef = useRef(0)
+  useEffect(function () {
+    if (userRating) countRef.current++
+  }, [userRating])
+  console.log(countRef)
+
   const isWatched = watched.map((watched) => watched.imdbID).includes(selectedId)
   const watchedUserRating = watched.find((watched) => watched.imdbID === selectedId)?.userRating
   const KEY = "80dd5fff"
@@ -306,7 +273,8 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
       poster,
       imdbRating: (Number(imdbRating)),
       runtime: Number(runtime.split(" ").at(0)),
-      userRating
+      userRating,
+      countRatingDecisions: countRef.current
     }
     // console.log(newWatchedMovie.imdbRating)
     onAddWatchedMovie(newWatchedMovie)
@@ -316,6 +284,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched }) 
     console.log(avgRating)
 
   }
+
+
+
   useEffect(function () {
     function callback(e) {
       if (e.code === "Escape") {
