@@ -14,7 +14,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
 }
 
 html {
@@ -56,6 +55,7 @@ body {
   background-color: var(--color-background-500);
   border-radius: 0.9rem;
   overflow: scroll;
+  scroll-behavior: smooth;
   position: relative;
 }
 
@@ -338,7 +338,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-
 }
 
 /*
