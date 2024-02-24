@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 
-export function useMovie(query, handleCloseMovie) {
+export function useMovies(query) {
+
     const [movies, setMovies] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
     const [error, setErrorMessage] = useState("")
@@ -39,7 +40,7 @@ export function useMovie(query, handleCloseMovie) {
             setErrorMessage("")
             return;
         }
-        handleCloseMovie?.()
+        // handleCloseMovie?.()
         fetchMovie();
 
         return function () {
